@@ -1,14 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http.Headers;
-using System.Net.Sockets;
-using System.Text;
-using System.Text.Json.Serialization;
 
 using Newtonsoft.Json;
 
-namespace Laba3 {
+namespace OOP_Laba3 {
 	/*
 
 		Создать класс Abiturient: 
@@ -24,9 +20,11 @@ namespace Laba3 {
 
 	*/
 
-	class Abiturient {
+	partial class Abiturient {
 		// Список всех абитуриентов
-		public static List<Abiturient> AbiturientList { get; private set; }
+		public static List<Abiturient> List { get; private set; }
+		// Кол-во созданных абитуриентов
+		public static int Counter { get; private set; }
 
 		// Данные об абитуриенте
 		[JsonProperty("id")]
@@ -37,6 +35,9 @@ namespace Laba3 {
 		public string Name { get; private set; }
 		[JsonProperty("patronymic")]
 		public string Patronymic { get; private set; }
+		[JsonProperty("phone")]
+		public string Phone { get; private set; }
+		[JsonProperty("address")]
 		public Address Address { get; private set; }
 		// Словарь (он же по заданию массив) с оценками
 		[JsonProperty("Marks")]
@@ -57,7 +58,9 @@ namespace Laba3 {
 		//Статический конструктор
 		static Abiturient() {
 			// Загрузка сохранённых студентов из json
-			AbiturientList = DB.Read();
+			List = DB.Read();
+			if (List == null)
+				List = new List<Abiturient>();
 		}
 
 		// Конструктор без параметров
@@ -66,50 +69,144 @@ namespace Laba3 {
 			Surname = "Не указана";
 			Name = "Не указано";
 			Patronymic = "Не указано";
+			Counter++;
 		}
 
 		// Конструктор с параметрами
-		public Abiturient(string id, string surname, string name, string patronymic, Address address, Dictionary<string, int?> marks) {
+		public Abiturient(string id, string surname, string name, string patronymic, string phone,Address address, Dictionary<string, int?> marks) {
 			Id = id;
 			Surname = surname;
 			Name = name;
 			Patronymic = patronymic;
+			Phone = phone;
 			Address = address;
 			Marks = new Dictionary<string, int?>(marks);
+			Counter++;
 		}
 
 		// Конструктор с параметрами по умолчанию
-		public Abiturient(string id, string surname, string name, string patronymic = "Не указано") {
+		public Abiturient(ref string id, ref string surname, ref string name, string patronymic = "Не указано") {
 			Id = id;
 			Surname = surname;
 			Name = name;
 			Patronymic = patronymic;
+			Phone = "Не указан";
 			Address = new Address();
-		}
-
-		// Закрытый конструктор
-		private Abiturient(string id) {
-			Id = id;
-			Surname = "Не указана";
-			Name = "Не указано";
-			Patronymic = "Не указано";
+			Marks = new Dictionary<string, int?>();
+			Counter++;
 		}
 
 		// Перезапись списка абитуриентов
 		public static void ReWrite(List<Abiturient> abiturients) {
-			if (AbiturientList == null)
-				AbiturientList = new List<Abiturient>(abiturients);
+			if (List == null)
+				List = new List<Abiturient>(abiturients);
 			else
-				AbiturientList = abiturients;
+				List = abiturients;
+			DB.Write(List);
 		}
 
 		// Средний балл
 		public double GetAvg() {
+			if (Marks == null)
+				return 0;
 			var avg = Marks.Values.Average();
 			if (avg.HasValue)
 				return avg.Value;
 			else
 				return 0;
+		}
+
+		// Проверка ID
+		public static void IsIdFree(string id, out bool isFree ) {
+			isFree = true;
+			foreach (var item in List) {
+				if (item.Id == id) {
+					isFree = false;
+					break;
+				}
+			}
+		}
+
+		// Добавление абитуриента
+		public static void Add(Abiturient abiturient) {
+			List.Add(abiturient);
+			ReWrite(List);
+		}
+
+		// Удаление абитуриента
+		public static void Delete(Abiturient abiturient) {
+			List.Remove(abiturient);
+			ReWrite(List);
+		}
+
+		// Поиск студента по id или фамилии
+		public static List<Abiturient> GetAbiturient(string data) {
+			var result = new List<Abiturient>();
+			foreach (var item in List) {
+				if (item.Id == data) {
+					result.Add(item);
+					break;
+				}
+				if (item.Surname == data)
+					result.Add(item);
+			}
+			return result;
+		}
+
+		// Список с неудовлетворительными оценками
+		public static List<Abiturient> GetUnderperforming() {
+			var list = new List<Abiturient>();
+			foreach (var item in List) {
+				if (item.Marks.Values.Any(v => v < 4))
+					list.Add(item);
+			}
+			return list;
+		}
+
+		// Список с суммой оценок выше заданной
+		public static List<Abiturient> GetMoreThan(int userSum) {
+			var list = new List<Abiturient>();
+			foreach (var item in List) {
+				if (item.Marks.Values.Sum() > userSum)
+					list.Add(item);
+			}
+			return list;
+		}
+
+		public enum PrintType {
+			Short,
+			Full
+		}
+
+		public static void PrintList(List<Abiturient> list, PrintType type) {
+			int counter = 0;
+			switch (type) {
+				case PrintType.Short:
+					Console.WriteLine("  №      ID           Фамилия             Имя          Средний балл\n");
+					foreach (var item in list) {
+						Console.WriteLine($"{++counter,4})  {item.Id,6}      {item.Surname,-13}      {item.Name,-11}      {item.GetAvg(),8:F2}");
+					}
+					break;
+				case PrintType.Full:
+					foreach (var item in list) {
+						Console.WriteLine(
+						$"\n{++counter,4})    ID: {item.Id}" +
+						$"\nФИО: {item.Surname} {item.Name} {item.Patronymic}" +
+						$"\nТелефон: {item.Phone}" +
+						$"\nСредний балл: {item.GetAvg(),3:F2}" +
+						$"\nМинимальный/максимальный балл: {item.Marks.Values.Min()}/{item.Marks.Values.Max()}" +
+						$"\nАдрес: г. {item.Address.City}, ул. {item.Address.Street}, д. {item.Address.House}, кв. {item.Address.Flat}" +
+						$"\nСписок оценок:"
+						);
+						foreach (var mark in item.Marks) {
+							Console.WriteLine(
+								$"{mark.Key,-24}{mark.Value}");
+						}
+					}
+					break;
+				default:
+					break;
+			}
 		}
 	}
 }

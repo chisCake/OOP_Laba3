@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Laba3 {
+namespace OOP_Laba3 {
 	class Address {
 		[JsonProperty("city")]
 		public string City { get; private set; }

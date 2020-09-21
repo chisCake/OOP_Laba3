@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace Laba3 {
+namespace OOP_Laba3 {
 	class Generator {
 		private static Random rndm = new Random();
 		private static List<Abiturient> abiturients = new List<Abiturient>();
@@ -74,7 +74,7 @@ namespace Laba3 {
 				LoadBlanks();
 			abiturients.Clear();
 
-			string id, surname, name, patronymic;
+			string id, surname, name, patronymic, phone;
 			Address address;
 
 			for (int i = 0; i < amt; i++) {
@@ -96,6 +96,11 @@ namespace Laba3 {
 				surname = surnames[rndm.Next(surnames.Count)];
 				name = names[rndm.Next(names.Count)];
 				patronymic = patronymics[rndm.Next(patronymics.Count)];
+
+				// Генерация номера
+				int code = rndm.Next(4);
+				phone = $"+375{(code == 0 ? 25 : code == 1 ? 29 : code == 2 ? 33 : 44)}" +
+					$"{(code == 0 ? rndm.Next(10000000) : rndm.Next(2) == 0 ? rndm.Next(1000000, 4000000) : rndm.Next(5000000, 10000000))}";
 
 				// Генерация адреса
 				string city = cities[rndm.Next(cities.Count)];
@@ -120,7 +125,7 @@ namespace Laba3 {
 					{"ИГиГ", rndm.Next(minVals[iqLvl], maxVals[iqLvl])}
 				};
 
-				var abiturient = new Abiturient(id, surname, name, patronymic, address, marks);
+				var abiturient = new Abiturient(id, surname, name, patronymic, phone, address, marks);
 				abiturients.Add(abiturient);
 			}
 

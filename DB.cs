@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
+
 using Newtonsoft.Json;
 
-namespace Laba3 {
+namespace OOP_Laba3 {
 	class DB {
 		public static void Write(List<Abiturient> abiturients) {
 			using var sw = new StreamWriter("abiturients.json");
