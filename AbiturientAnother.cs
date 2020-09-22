@@ -1,7 +1,11 @@
 ﻿using System;
 using System.Security.Cryptography.X509Certificates;
 
+<<<<<<< HEAD
 namespace OOP_Laba3 {
+=======
+namespace Laba3 {
+>>>>>>> 0f2594825fde0a58ac71941cc0caeec6336c9514
 	partial class Abiturient {
 		// Не нашли применения
 
