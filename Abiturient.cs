@@ -57,6 +57,7 @@ namespace OOP_Laba3 {
 
 		//Статический конструктор
 		static Abiturient() {
+			Counter = 0;
 			// Загрузка сохранённых студентов из json
 			List = DB.Read();
 			if (List == null)
